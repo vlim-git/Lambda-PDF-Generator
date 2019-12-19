@@ -22,3 +22,5 @@ node_modules
 __pycache__
 NOTES.md
 config.yml
+venv
+.idea

@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'SAM template for Serverless framework service: '
+Parameters:
+  BucketNamePrefix:
+    Type: String
+    Default: vlim-pdf-bucket3
+Resources:
+  PDFBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: ${BucketNamePrefix}
+  VLIMDevGeneratePDFFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://vlim-pdf-deploymment-bucket3/8199878977230362628f895b976e7b69
+      Handler: handler.generate_pdf
+      Runtime: python3.7
+      MemorySize: 128
+      Timeout: 20
+      Policies:
+      - S3CrudPolicy:
+          BucketName:
+            Fn::Sub: ${BucketNamePrefix}
+      Environment:
+        Variables:
+          S3_BUCKET_NAME:
+            Fn::Sub: ${BucketNamePrefix}
+      Events:
+        PDFGenerator:
+          Type: Api
+          Properties:
+            Path: /new-pdf
+            Method: post
+Outputs:
+  S3Bucket:
+    Description: S3 Bucket name that will store the resized versions of the images
+      from the source bucket
+    Value:
+      Ref: PDFBucket
+  VLIMDevGeneratePDFApi:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/new-pdf/
+  VLIMDevGeneratePDFFunction:
+    Description: Hello World Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - VLIMDevGeneratePDFFunction
+      - Arn
+  VLIMDevGeneratePDFIamRole:
+    Description: Implicit IAM Role created for Hello World function
+    Value:
+      Fn::GetAtt:
+      - VLIMDevGeneratePDFFunctionRole
+      - Arn
